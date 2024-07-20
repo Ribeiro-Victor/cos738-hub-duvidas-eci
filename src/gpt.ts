@@ -3,6 +3,7 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { redis, redisVectorStore } from "./redis-store";
 import { createRetrievalChain } from "langchain/chains/retrieval";
+import { mongoClient, mongoVectorStore } from "./mongodb-store";
 
 import 'dotenv/config'; 
 
@@ -17,12 +18,9 @@ import 'dotenv/config';
 // Criação do prompt
 const prompt = new PromptTemplate({
   template: `
-    Você responde perguntas sobre programação.
-    O usuário está acompanhando um curso com vários conteúdos.
-    Use os conteúdos das aulas abaixo para responder a pergunta do usuário.
-    Se a resposta não for encontrada nos conteúdos, responda que você não sabe, não tente inventar uma resposta.
-
-    Se possível, inclua exemplos de código.
+    Você responde perguntas sobre o curso de engenharia de computação.
+    Use os conteúdos das mensagens abaixo para responder a pergunta do usuário.
+    Se a resposta não for encontrada nas mensagens, responda que você não sabe, não tente inventar uma resposta.
 
     Conteúdos das aulas:
     {context}
@@ -35,7 +33,7 @@ const prompt = new PromptTemplate({
 
 export async function main(input: string) {
   try {
-    await redis.connect();
+    await mongoClient.connect();
 
     const combineDocsChain = await createStuffDocumentsChain({
       llm: openAIChat,
@@ -44,7 +42,7 @@ export async function main(input: string) {
 
     const retrievalChain = await createRetrievalChain({
       combineDocsChain,
-      retriever: redisVectorStore.asRetriever(),
+      retriever: mongoVectorStore.asRetriever(),
     });
 
     const response = await retrievalChain.invoke({ 
@@ -56,7 +54,7 @@ export async function main(input: string) {
     console.error('Erro ao executar a cadeia de recuperação:', error);
   } finally {
     console.log('Desconectando do Redis...');
-    await redis.disconnect();
+    await mongoClient.close();
     console.log('Desconectado do Redis.');
   }
 }

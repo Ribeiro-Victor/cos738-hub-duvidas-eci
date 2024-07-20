@@ -11,6 +11,9 @@ importers:
       '@langchain/core':
         specifier: ^0.2.17
         version: 0.2.17(langchain@0.2.10(mongodb@6.8.0)(openai@4.52.7)(redis@4.6.15))(openai@4.52.7)
+      '@langchain/mongodb':
+        specifier: ^0.0.4
+        version: 0.0.4(langchain@0.2.10(mongodb@6.8.0)(openai@4.52.7)(redis@4.6.15))(openai@4.52.7)
       '@langchain/openai':
         specifier: ^0.2.3
         version: 0.2.3(langchain@0.2.10(mongodb@6.8.0)(openai@4.52.7)(redis@4.6.15))
@@ -202,6 +205,10 @@ packages:
 
   '@langchain/core@0.2.17':
     resolution: {integrity: sha512-WnFiZ7R/ZUVeHO2IgcSL7Tu+CjApa26Iy99THJP5fax/NF8UQCc/ZRcw2Sb/RUuRPVm6ALDass0fSQE1L9YNJg==}
+    engines: {node: '>=18'}
+
+  '@langchain/mongodb@0.0.4':
+    resolution: {integrity: sha512-9cUdoJyQAMNVIKp5EuYypWplZTd8Rdz1J6RuqYKPRbDioLES4JyssUH5+9U+4Ct0VHxEQyd4vbcu8ZtKduigxg==}
     engines: {node: '>=18'}
 
   '@langchain/openai@0.2.3':
@@ -1160,6 +1167,21 @@ snapshots:
     transitivePeerDependencies:
       - langchain
       - openai
+
+  '@langchain/mongodb@0.0.4(langchain@0.2.10(mongodb@6.8.0)(openai@4.52.7)(redis@4.6.15))(openai@4.52.7)':
+    dependencies:
+      '@langchain/core': 0.2.17(langchain@0.2.10(mongodb@6.8.0)(openai@4.52.7)(redis@4.6.15))(openai@4.52.7)
+      mongodb: 6.8.0
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@mongodb-js/zstd'
+      - gcp-metadata
+      - kerberos
+      - langchain
+      - mongodb-client-encryption
+      - openai
+      - snappy
+      - socks
 
   '@langchain/openai@0.2.3(langchain@0.2.10(mongodb@6.8.0)(openai@4.52.7)(redis@4.6.15))':
     dependencies:

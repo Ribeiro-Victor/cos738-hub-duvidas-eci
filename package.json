@@ -9,6 +9,7 @@
 	},
 	"dependencies": {
 		"@langchain/core": "^0.2.17",
+		"@langchain/mongodb": "^0.0.4",
 		"@langchain/openai": "^0.2.3",
 		"@langchain/redis": "^0.0.5",
 		"dotenv": "^16.4.5",
