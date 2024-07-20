@@ -31,32 +31,25 @@ const prompt = new PromptTemplate({
   inputVariables: ['context', 'input'] // variáveis que podemos receber no prompt
 });
 
-async function main() {
+export async function main(input: string) {
   try {
-    console.log('Conectando ao Redis...');
     await redis.connect();
-    console.log('Conectado ao Redis.');
 
-    console.log('Criando combineDocsChain...');
     const combineDocsChain = await createStuffDocumentsChain({
       llm: openAIChat,
       prompt,
     });
-    console.log('combineDocsChain criado.');
 
-    console.log('Criando retrievalChain...');
     const retrievalChain = await createRetrievalChain({
       combineDocsChain,
       retriever: redisVectorStore.asRetriever(),
     });
-    console.log('retrievalChain criado.');
 
-    console.log('Invocando retrievalChain...');
-    const response = await retrievalChain.invoke({
-      input: 'Quais são as formas de lidar com carregamento assíncrono e renderização em alta prioridade?'
+    const response = await retrievalChain.invoke({ 
+      input 
     });
 
-    console.log('Resposta recebida:', response);
+    return response;
   } catch (error) {
     console.error('Erro ao executar a cadeia de recuperação:', error);
   } finally {
@@ -65,6 +58,4 @@ async function main() {
     console.log('Desconectado do Redis.');
   }
 }
-
-main();
 
