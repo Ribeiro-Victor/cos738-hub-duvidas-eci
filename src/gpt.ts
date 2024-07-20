@@ -1,7 +1,8 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
-import { RetrievalQAChain } from 'langchain/chains'
+import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { redis, redisVectorStore } from "./redis-store";
+import { createRetrievalChain } from "langchain/chains/retrieval";
 
 const openAIChat = new ChatOpenAI({
   openAIApiKey: process.env.OPEN_AI_KEY, // chave api open ai
@@ -25,30 +26,45 @@ const prompt = new PromptTemplate({
     {context}
 
     Pergunta:
-    {question}
+    {input}
   `.trim(),
-  inputVariables: ['context', 'question'] // variáveis que podemos receber no prompt
+  inputVariables: ['context', 'input'] // variáveis que podemos receber no prompt
 });
 
-// As chains são uma forma de conectar os módulos: prompt, api da OpenAI e banco de dados redis
-// A ConversationChain é uma chain que podemos utilizar uma inteligência de memória
-const chain = RetrievalQAChain.fromLLM(openAIChat, redisVectorStore.asRetriever(), {
-  prompt,
-  returnSourceDocuments: true,
-  verbose: true
-})
-
 async function main() {
-  await redis.connect()
+  try {
+    console.log('Conectando ao Redis...');
+    await redis.connect();
+    console.log('Conectado ao Redis.');
 
-  const response = await chain.call({
-    query: 'Quais bibliotecas o react suporta integração de gerenciamento de estado externas?'
-  })
+    console.log('Criando combineDocsChain...');
+    const combineDocsChain = await createStuffDocumentsChain({
+      llm: openAIChat,
+      prompt,
+    });
+    console.log('combineDocsChain criado.');
 
-  console.log(response)
+    console.log('Criando retrievalChain...');
+    const retrievalChain = await createRetrievalChain({
+      combineDocsChain,
+      retriever: redisVectorStore.asRetriever(),
+    });
+    console.log('retrievalChain criado.');
 
-  await redis.disconnect()
+    console.log('Invocando retrievalChain...');
+    const response = await retrievalChain.invoke({
+      input: 'Quais são as formas de lidar com carregamento assíncrono e renderização em alta prioridade?'
+    });
+
+    console.log('Resposta recebida:', response);
+  } catch (error) {
+    console.error('Erro ao executar a cadeia de recuperação:', error);
+  } finally {
+    console.log('Desconectando do Redis...');
+    await redis.disconnect();
+    console.log('Desconectado do Redis.');
+  }
 }
 
-main()
+main();
 
