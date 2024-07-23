@@ -1,7 +1,9 @@
 const { MongoClient } = require('mongodb');
 
+import 'dotenv/config'; 
+
 // Use sua string de conexão aqui
-const MONGO_CONN_STRING = process.env.MONGO_CONNECTION_STRING || 'mongodb+srv://admin:admineci@cluster0.i4rlgsj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const MONGO_CONN_STRING = process.env.DATABASE_URL || '';
 
 // Função assíncrona para acessar o MongoDB e imprimir a primeira linha da coleção
 async function accessMongoDB() {

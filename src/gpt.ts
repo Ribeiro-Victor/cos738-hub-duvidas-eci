@@ -4,6 +4,8 @@ import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { redis, redisVectorStore } from "./redis-store";
 import { createRetrievalChain } from "langchain/chains/retrieval";
 
+import 'dotenv/config'; 
+
 const openAIChat = new ChatOpenAI({
   openAIApiKey: process.env.OPEN_AI_KEY, // chave api open ai
   modelName: 'gpt-3.5-turbo', // modelo
