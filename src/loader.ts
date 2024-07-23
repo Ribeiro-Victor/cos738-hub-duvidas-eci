@@ -8,6 +8,8 @@ import { RedisVectorStore } from "@langchain/redis";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { createClient } from 'redis';
 
+import 'dotenv/config';
+
 // Para cada arquivo no diretório "temp", carregar com o JSONLoader todos os arquivos que tiverem a extensão ".json". Porém, selecionar o valor da chave "text" para carregar em loader
 const loader = new DirectoryLoader(
   path.resolve(__dirname, '../temp'),
@@ -38,7 +40,7 @@ async function load() {
   // O primeiro parâmetro são os chunks e o segundo parâmetro é qual estrtégia utilizará para criar a representação semântica de cada chunk. Existem diversas opções de modelos pré treinados que podem ser utilizados para semântica (exemplos de modelos: sbert.net, hugging face..). Utilizaremos o modelo pago da open ai (melhor resultado)
   await RedisVectorStore.fromDocuments(
     splittedDocuments, 
-    new OpenAIEmbeddings({ openAIApiKey: 'sk-proj-uNmmdLuZWoC0Npyl9dUKT3BlbkFJ0EfMj93wGsNKwC8IliEL' }),
+    new OpenAIEmbeddings({ openAIApiKey: process.env.OPEN_AI_KEY }),
     {
       indexName: 'test-embeddings', // índice para cada documento
       redisClient: redis, // cliente redis

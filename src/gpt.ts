@@ -4,10 +4,12 @@ import { RetrievalQAChain } from 'langchain/chains'
 import { redis, redisVectorStore } from "./redis-store";
 
 const openAIChat = new ChatOpenAI({
-  openAIApiKey: 'sk-proj-uNmmdLuZWoC0Npyl9dUKT3BlbkFJ0EfMj93wGsNKwC8IliEL', // chave api open ai
+  openAIApiKey: process.env.OPEN_AI_KEY, // chave api open ai
   modelName: 'gpt-3.5-turbo', // modelo
   temperature: 0.3 // nível de criatividade / aleatoriedade do modelo
 })
+
+import 'dotenv/config'; 
 
 // Criação do prompt
 const prompt = new PromptTemplate({
