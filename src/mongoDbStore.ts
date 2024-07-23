@@ -1,6 +1,8 @@
 import { MongoClient, Db, Collection } from "mongodb";
 
-const mongoClient = new MongoClient('mongodb+srv://admin:admineci@cluster0.i4rlgsj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
+import 'dotenv/config'; 
+
+const mongoClient = new MongoClient(process.env.DATABASE_URL || '');
 
 async function logCollectionContents() {
   try {
