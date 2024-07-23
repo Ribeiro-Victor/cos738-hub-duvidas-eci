@@ -1,9 +1,32 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
-import { redis, redisVectorStore } from "./redis-store";
-import { createRetrievalChain } from "langchain/chains/retrieval";
-import { mongoClient, mongoVectorStore } from "./mongodb-store";
+import { Document } from "@langchain/core/documents";
+
+import { mongoClient } from "./mongodb-store";
+import { searchBaseMessages } from "./searchBaseMessages";
+import { getBaseAndPostMessages } from "./getPostMessages";
+import 'dotenv/config';
+
+const getBaseAndPostMessageDocuments = (baseAndPostMessages: Document<Record<string, any>>[]) => {
+  const baseAndPostMessageDocuments = [];
+  for (const baseMessage of baseAndPostMessages) {
+    // Copia o baseMessage sem a chave metadata.postMessages
+    const { metadata: { postMessages, ...metadataWithoutPostMessages }, ...rest } = baseMessage;
+    const baseMessageWithoutPostMessages = {
+      ...rest,
+      metadata: metadataWithoutPostMessages,
+    };
+
+    // Adiciona o baseMessage modificado na nova lista
+    baseAndPostMessageDocuments.push(baseMessageWithoutPostMessages);
+
+    // Adiciona todos os postMessages na nova lista
+    baseAndPostMessageDocuments.push(...postMessages);
+  };
+
+  return baseAndPostMessageDocuments;
+};
 
 import 'dotenv/config'; 
 
@@ -18,11 +41,13 @@ import 'dotenv/config';
 // Criação do prompt
 const prompt = new PromptTemplate({
   template: `
-    Você responde perguntas sobre o curso de engenharia de computação.
-    Use os conteúdos das mensagens abaixo para responder a pergunta do usuário.
+    Você responde perguntas sobre do curso de Engenharia de Computação e Informação da universidade UFRJ do Rio de Janeiro (Brasil).
+    Use os conteúdos das mensagens abaixo para responder a pergunta do usuário, mas use sua criatividade para dar suas opiniões / recomendações, caso a pergunta dê abertura para isso.
     Se a resposta não for encontrada nas mensagens, responda que você não sabe, não tente inventar uma resposta.
+    Mande as respostas sempre em Markdown.
+    Responda em tabela somente for exibir uma lista.
 
-    Conteúdos das aulas:
+    Mensagens:
     {context}
 
     Pergunta:
@@ -35,27 +60,34 @@ export async function main(input: string) {
   try {
     await mongoClient.connect();
 
-    const combineDocsChain = await createStuffDocumentsChain({
-      llm: openAIChat,
-      prompt,
-    });
+    const baseMessages = await searchBaseMessages(input);
+    const result = baseMessages && await getBaseAndPostMessages(baseMessages);
+    if (result) {
+      const { baseAndPostMessages, formattedBaseMessages } = result;
 
-    const retrievalChain = await createRetrievalChain({
-      combineDocsChain,
-      retriever: mongoVectorStore.asRetriever(),
-    });
+      const combineDocsChain = await createStuffDocumentsChain({
+        llm: openAIChat,
+        prompt
+      });
 
-    const response = await retrievalChain.invoke({ 
-      input 
-    });
-
-    return response;
+      const baseAndPostMessageDocuments = getBaseAndPostMessageDocuments(baseAndPostMessages);
+      console.log("invoking")
+      const response = await combineDocsChain.invoke({ 
+        input,
+        context: baseAndPostMessageDocuments
+      });
+      console.log("response", response);
+      
+      return {
+        content: response,
+        baseMessages: formattedBaseMessages
+      };
+    } else {
+      throw new Error('Nenhuma mensagem encontrada na busca semântica');
+    };
   } catch (error) {
     console.error('Erro ao executar a cadeia de recuperação:', error);
   } finally {
-    console.log('Desconectando do Redis...');
     await mongoClient.close();
-    console.log('Desconectado do Redis.');
-  }
-}
-
+  };
+};
