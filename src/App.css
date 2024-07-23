@@ -1,0 +1,84 @@
+#root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: justify;
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.logo {
+  height: 10em;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+.title {
+  font-size: medium;
+  text-align: center;
+}
+
+.card {
+  margin-top: 2%;
+  display: flex;
+  flex-direction: column;
+}
+
+.questionInput {
+  width: 400px;  /* Define a largura do textarea */
+  height: 150px;
+  padding: 10px;
+}
+
+.askButton {
+  background-color: #003366;
+  color: white;
+  width: fit-content;
+  align-self: center;
+  margin-top: 4%;
+}
+
+.askButton:disabled {
+  cursor: not-allowed;
+  opacity: 80%;
+}
+
+.baseMessagesContainer {
+  margin-top: 2%;
+}
+
+.showPostMessagesButton {
+  font-size: 10.3px;
+  width: fit-content;
+  background-color: transparent;
+  border: none;
+  color: rgb(65, 65, 65);
+  transition: color ease; 
+  outline: none;
+}
+
+.showPostMessagesButton:hover {
+  color: rgb(110, 110, 110); 
+}
+
+.showPostMessagesButton:focus,
+.showPostMessagesButton:active {
+  outline: none; 
+}
+
+.baseMessageContainer {
+  display: flex;
+  margin-top: 10px;
+  flex-direction: column;
+}
