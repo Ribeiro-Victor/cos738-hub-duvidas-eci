@@ -3,6 +3,9 @@ import logo from './assets/logo.svg';
 import './App.css';
 import api from './api';
 
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 interface IBaseMessage {
   content: string;
   timestamp: string;
@@ -18,9 +21,9 @@ interface IAnswer {
   baseMessages: IBaseMessage[];
 };
 
-function formatToBrazilianDate(isoDateString: string) {
+const formatToBrazilianDate = (isoDateString: string) => {
   const date = new Date(isoDateString);
-
+  date.setHours(date.getHours() + 3);
 
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0'); // Os meses são baseados em zero
@@ -32,83 +35,25 @@ function formatToBrazilianDate(isoDateString: string) {
 
   console.log("date", `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`)
   return `${day}/${month}/${year} às ${hours}:${minutes}`;
-}
-
-// Exemplo de uso
-const isoDateString = "2024-02-27T11:36:00.000Z";
-const brazilianDateString = formatToBrazilianDate(isoDateString);
-console.log(brazilianDateString); // "27/02
-
+};
 
 function App() {
   const [answer, setAnswer] = useState<IAnswer | undefined>(undefined);
   const [question, setQuestion] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleQuestion = async () => {
+    setLoading(true);
     try {
       const response = await api.post("/chat", {
         input: question
       });
       console.log(response);
       setAnswer(response.data);
-      /*setAnswer({
-        content: "A aula do professor Gerson é muito boa segundo diversos alunos A aula do professor Gerson é muito boa segundo diversos alunos A aula do professor Gerson é muito boa segundo diversos alunos A aula do professor Gerson é muito boa segundo diversos alunos A aula do professor Gerson é muito boa segundo diversos alunos A aula do professor Gerson é muito boa segundo diversos alunos A aula do professor Gerson é muito boa segundo diversos alunos A aula do professor Gerson é muito boa segundo diversos alunos A aula do professor Gerson é muito boa segundo diversos alunos A aula do professor Gerson é muito boa segundo diversos alunos ",
-        baseMessages: [
-          {
-            content: 'Pelo que vi, muito professores já enviaram pra ela o horário.',
-            timestamp: '2024-02-27T11:36:00.000Z',
-            showPostMessages: false,
-            postMessages: [
-              {
-                content: "Acho que é por isso",
-                timestamp: "2024-02-27T11:36:00.000Z"
-              },
-              {
-                content: "Acho que é por isso",
-                timestamp: "2024-02-27T11:36:00.000Z"
-              },
-              {
-                content: "Acho que é por isso",
-                timestamp: "2024-02-27T11:36:00.000Z"
-              },
-              {
-                content: "Acho que é por isso",
-                timestamp: "2024-02-27T11:36:00.000Z"
-              }
-            ]
-          },
-          {
-            content: 'Pelo que vi, muito professores já enviaram pra ela o horário. Pelo que vi, muito professores já enviaram pra ela o horário. Pelo que vi, muito professores já enviaram pra ela o horário. Pelo que vi, muito professores já enviaram pra ela o horário. Pelo que vi, muito professores já enviaram pra ela o horário. Pelo que vi, muito professores já enviaram pra ela o horário. Pelo que vi, muito professores já enviaram pra ela o horário. Pelo que vi, muito professores já enviaram pra ela o horário.',
-            timestamp: "2024-02-27T11:36:00.000Z",
-            showPostMessages: false,
-            postMessages: [
-              {
-                content: "Também acho",
-                timestamp: "2024-02-27T11:36:00.000Z"
-              },
-              {
-                content: "Também acho",
-                timestamp: "2024-02-27T11:36:00.000Z"
-              },
-              {
-                content: "Também acho",
-                timestamp: "2024-02-27T11:36:00.000Z"
-              },
-              {
-                content: "Também acho",
-                timestamp: "2024-02-27T11:36:00.000Z"
-              },
-              {
-                content: "Também acho",
-                timestamp: "2024-02-27T11:36:00.000Z"
-              }
-            ]
-          }
-        ]
-      });*/
     } catch(error) {
       console.error("Erro:", error);
     };
+    setLoading(false);
   };
 
   const handleQuestionAgain = () => {
@@ -125,7 +70,14 @@ function App() {
       {answer ?
         <div className="card">
           <p><strong>Pergunta:</strong> {question}</p>
-          <p><strong>Resposta:</strong> {answer.content}</p>
+          <div>
+            <p><strong>Resposta:</strong></p>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+            >
+              {answer.content}
+            </ReactMarkdown>
+          </div>
           <button className="askButton" onClick={handleQuestionAgain}>
             Perguntar novamente
           </button>
@@ -175,12 +127,16 @@ function App() {
           placeholder="Faça uma pergunta..." 
           onChange={(e) => setQuestion(e.target.value)}
         />
-        <button className="askButton" onClick={handleQuestion}>
-          Perguntar
+        <button 
+          className="askButton" 
+          onClick={handleQuestion}
+          disabled={loading || !question}
+        >
+          {loading ? "Carregando..." : "Perguntar"}
         </button>
       </div>}
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
